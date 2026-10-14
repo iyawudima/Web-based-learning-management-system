@@ -1,0 +1,1 @@
+if(location.protocol==="file:")document.addEventListener("DOMContentLoaded",function(){document.body.innerHTML='<div style="padding:30px;font-family:sans-serif;max-width:640px;margin:auto"><h3>Cannot start</h3><p>Do not open this file by double-clicking. Open the folder in VS Code and use <b>Live Server</b>, or deploy to Firebase Hosting.</p></div>'});

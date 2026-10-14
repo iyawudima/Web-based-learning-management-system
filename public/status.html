@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check Application Status</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/guard.js"></script>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="brand"><img data-logo hidden alt=""><span class="logo" data-brand="short"></span> <span data-brand="name"></span></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="status.html">Check Status</a>
+    <a href="register.html">Student Registration</a>
+    <a href="login.html" class="btn">Login</a>
+  </nav>
+</header>
+
+<form id="sf" class="card form auth">
+  <h2>Check Application Status</h2>
+  <input name="ref" placeholder="Application reference e.g. APP-2026-ABC123" required>
+  <input name="pin" placeholder="Verification PIN" required>
+  <p class="err" id="sm"></p>
+  <button class="btn">Check status</button>
+</form>
+<div id="res" class="card wide" hidden>
+  <h3 id="rRef"></h3>
+  <p>Status: <span class="tag" id="rStatus"></span></p>
+  <p id="rRemarks" hidden></p>
+  <div id="approved" hidden>
+    <p><b>Matric Number: <span id="rMatric"></span></b></p>
+    <p>Next step: open <a href="register.html">Student Registration</a>, enter your Matric Number and this application reference to create your account, then log in and enroll in your courses.</p>
+  </div>
+  <form id="cr" class="form" hidden>
+    <p>Your application is incomplete. Submit the correction below.</p>
+    <textarea name="note" placeholder="Describe the correction you have made" required></textarea>
+    <input type="file" name="files" multiple accept="application/pdf,image/jpeg,image/png">
+    <p class="err" id="cm"></p>
+    <button class="btn">Submit correction</button>
+  </form>
+</div>
+<footer class="foot">© <span data-brand="name"></span> · <span data-brand="program"></span> · Session <span data-brand="session"></span></footer>
+<div id="toast"></div>
+<script type="module" src="js/status.js"></script>
+</body>
+</html>

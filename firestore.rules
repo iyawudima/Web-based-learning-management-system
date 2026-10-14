@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function role() { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role; }
+    function isAdmin() { return signedIn() && role() == 'admin'; }
+    function isStaff() { return signedIn() && role() in ['admin', 'lecturer']; }
+    function isOfficer() { return signedIn() && role() in ['admin', 'officer']; }
+    function enrolled(cid) { return exists(/databases/$(db)/documents/enrollments/$(cid + '_' + request.auth.uid)); }
+    function canSee(cid) { return isStaff() || enrolled(cid); }
+    function owns(cid) { return isAdmin() || get(/databases/$(db)/documents/courses/$(cid)).data.lecturerId == request.auth.uid; }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // Self-registration can ONLY create a student. Admin promotes later.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role == 'student'
+        && request.resource.data.keys().hasOnly(['name','email','role','matric','phone','createdAt','applicationRef'])
+        && getAfter(/databases/$(db)/documents/matrics/$(request.resource.data.matric)).data.claimedBy == request.auth.uid;
+      allow update: if isAdmin() || (request.auth.uid == uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','phone']));
+      allow delete: if isAdmin();
+    }
+    match /settings/{d} { allow read: if true; allow write: if isAdmin(); }
+    match /courses/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /enrollments/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.courseId + '_' + request.auth.uid;
+      allow delete: if isAdmin() || resource.data.uid == request.auth.uid;
+    }
+    match /{coll}/{id} {
+      allow read: if signedIn() && coll in ['materials','assignments','quizzes'] && canSee(resource.data.courseId);
+      allow create: if signedIn() && coll in ['materials','assignments','quizzes'] && owns(request.resource.data.courseId);
+      allow update, delete: if signedIn() && coll in ['materials','assignments','quizzes'] && owns(resource.data.courseId);
+    }
+    match /submissions/{sid} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && sid == request.resource.data.assignmentId + '_' + request.auth.uid
+        && enrolled(request.resource.data.courseId)
+        && request.resource.data.keys().hasOnly(['assignmentId','courseId','uid','studentName','text','fileUrl','filePath','createdAt']);
+      // Only the course lecturer/admin may grade; students can never edit.
+      allow update: if signedIn() && owns(resource.data.courseId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score','feedback','gradedBy','gradedAt']);
+    }
+    match /results/{rid} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && rid == request.resource.data.quizId + '_' + request.auth.uid
+        && enrolled(request.resource.data.courseId)
+        && request.resource.data.keys().hasOnly(['quizId','courseId','uid','studentName','score','total','createdAt']);
+      allow delete: if isAdmin();
+    }
+    match /announcements/{id} { allow read: if signedIn(); allow write: if isStaff(); }
+
+    // ---- Admissions ----
+    match /applications/{ref} {
+      allow read: if isOfficer();
+      allow create: if signedIn() && request.resource.data.applicantUid == request.auth.uid && request.resource.data.ref == ref;
+      allow update: if isOfficer()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['decision','remarks','matric','decidedBy','decidedAt'])
+        && (!('matric' in resource.data) || request.resource.data.matric == resource.data.matric);
+      match /audit/{id} {
+        allow read: if isOfficer();
+        allow create: if isOfficer() && request.resource.data.by == request.auth.uid;
+      }
+    }
+    // Doc id = SHA-256(ref:PIN). Knowing the id is the verification; listing is officer-only.
+    match /appStatus/{token} {
+      allow get: if true;
+      allow list: if isOfficer();
+      allow create: if signedIn() && request.resource.data.status == 'Submitted'
+        && request.resource.data.keys().hasOnly(['ref','status','name','remarks','updatedAt'])
+        && getAfter(/databases/$(db)/documents/applications/$(request.resource.data.ref)).data.applicantUid == request.auth.uid;
+      allow update: if isOfficer() || (resource.data.status == 'Incomplete' && request.resource.data.status == 'Under Review'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','correction','correctionFiles','updatedAt']));
+    }
+    match /appIndex/{k} { allow create: if signedIn(); }   // create-only: blocks duplicate applications
+    match /matrics/{m} {
+      allow read: if isOfficer();
+      allow create: if isOfficer() && request.resource.data.claimed == false && request.resource.data.matric == m;
+      allow update: if signedIn() && resource.data.claimed == false && request.resource.data.claimed == true
+        && request.resource.data.claimedBy == request.auth.uid && request.resource.data.proof == resource.data.appRef
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed','claimedBy','proof']);
+    }
+    match /counters/{c} {
+      allow read: if isOfficer();
+      allow create: if isOfficer() && request.resource.data.n == 1;
+      allow update: if isOfficer() && request.resource.data.n == resource.data.n + 1;
+    }
+  }
+}

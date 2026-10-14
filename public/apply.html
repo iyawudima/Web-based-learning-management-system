@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admission Application</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/guard.js"></script>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="brand"><img data-logo hidden alt=""><span class="logo" data-brand="short"></span> <span data-brand="name"></span></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="status.html">Check Status</a>
+    <a href="register.html">Student Registration</a>
+    <a href="login.html" class="btn">Login</a>
+  </nav>
+</header>
+
+<form id="wf" class="card wide" novalidate>
+  <h2>Admission Application</h2>
+  <div class="steps"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <p class="muted" id="stepLabel"></p>
+
+  <!-- A. PERSONAL INFORMATION -->
+  <fieldset class="step" data-title="Personal Information">
+    <div class="two">
+      <label>Full name *<input name="fullName" required minlength="3"></label>
+      <label>Date of birth *<input name="dob" type="date" required></label>
+      <label>Gender *<select name="gender" required><option value="">Select…</option><option>Male</option><option>Female</option></select></label>
+      <label>Nationality *<input name="nationality" required value="Nigerian"></label>
+      <label>State of origin *<input name="stateOrigin" required></label>
+      <label>Local Government Area *<input name="lga" required></label>
+    </div>
+    <label>Residential address *<textarea name="address" required></textarea></label>
+  </fieldset>
+
+  <!-- B. CONTACT INFORMATION -->
+  <fieldset class="step" data-title="Contact Information">
+    <div class="two">
+      <label>Phone number *<input name="phone" type="tel" required pattern="\+?[0-9]{10,14}" title="10 to 14 digits"></label>
+      <label>Email address *<input name="email" type="email" required></label>
+      <label>State of residence *<input name="resState" required></label>
+      <label>LGA of residence *<input name="resLga" required></label>
+      <label>Next of kin name *<input name="nokName" required></label>
+      <label>Relationship *<input name="nokRel" required></label>
+      <label>Next of kin phone *<input name="nokPhone" type="tel" required pattern="\+?[0-9]{10,14}" title="10 to 14 digits"></label>
+      <label>Next of kin address *<input name="nokAddress" required></label>
+    </div>
+  </fieldset>
+
+  <!-- C. PROGRAMME INFORMATION (options come from js/config.js) -->
+  <fieldset class="step" data-title="Programme Information">
+    <div class="two">
+      <label>Academic session *<select name="session" required></select></label>
+      <label>Faculty / School *<select name="faculty" required></select></label>
+      <label>Department *<select name="dept" required></select></label>
+      <label>Programme of study *<select name="programme" required></select></label>
+      <label>Qualification / entry level *<select name="level" required></select></label>
+      <label>Mode of study *<select name="mode" required></select></label>
+    </div>
+  </fieldset>
+
+  <!-- D. EDUCATIONAL QUALIFICATIONS (data-show="grad" = PGD/Masters only, "nongrad" = all other levels) -->
+  <fieldset class="step" data-title="Educational Qualifications">
+    <div class="two">
+      <label>Previous school attended *<input name="prevSchool" required></label>
+      <label>Highest qualification *<input name="highest" required></label>
+      <label data-show="grad">Class of degree / grade *<input name="degreeClass" required></label>
+      <label data-show="nongrad">Examination type *<select name="examType" required></select></label>
+      <label data-show="nongrad">Examination number *<input name="examNo" required></label>
+      <label data-show="nongrad">Examination year *<input name="examYear" type="number" required></label>
+    </div>
+    <label data-show="nongrad">Subjects and grades (one per line, e.g. English - B3; minimum 5) *<textarea name="subjects" required></textarea></label>
+    <label>Additional qualifications (optional)<textarea name="extra"></textarea></label>
+  </fieldset>
+
+  <!-- E. DOCUMENT UPLOADS -->
+  <fieldset class="step" data-title="Document Uploads">
+    <label>Passport photograph * (JPG/PNG, max 1 MB)
+      <input type="file" name="passport" data-label="Passport photograph" data-max="1" data-img="1" accept="image/jpeg,image/png" required>
+      <div class="prog"><i></i></div></label>
+    <label data-show="nongrad">O'Level result or equivalent * (PDF/JPG/PNG, max 5 MB)
+      <input type="file" name="olevel" data-label="O'Level result" data-max="5" accept="application/pdf,image/jpeg,image/png" required>
+      <div class="prog"><i></i></div></label>
+    <label>Certificates (required for PGD/Masters: degree certificate; otherwise optional) (PDF/JPG/PNG, max 5 MB)
+      <input type="file" name="cert" data-label="Certificates" data-max="5" data-req-grad accept="application/pdf,image/jpeg,image/png">
+      <div class="prog"><i></i></div></label>
+    <div id="extraDocs"></div>
+    <template id="tExtra"><label><span data-l></span> * (PDF/JPG/PNG, max 5 MB)
+      <input type="file" data-max="5" accept="application/pdf,image/jpeg,image/png" required>
+      <div class="prog"><i></i></div></label></template>
+  </fieldset>
+
+  <!-- F. DECLARATION -->
+  <fieldset class="step" data-title="Declaration">
+    <label><input type="checkbox" name="ok1" required style="width:auto"> I confirm that the information supplied is accurate and complete. *</label><br>
+    <label><input type="checkbox" name="ok2" required style="width:auto"> I accept the institution's privacy notice and application terms. *</label>
+    <div class="prog"><i id="allp"></i></div><small id="upMsg" class="muted"></small>
+  </fieldset>
+
+  <p class="err" id="em"></p>
+  <div style="display:flex;justify-content:space-between;gap:8px">
+    <button type="button" class="btn alt" id="back">Back</button>
+    <button type="button" class="btn" id="next">Next</button>
+  </div>
+</form>
+
+<div id="done" class="card wide" hidden>
+  <h2>Application submitted ✔</h2>
+  <p>Your application reference number and verification PIN are below. <b>Save them now — the PIN cannot be recovered.</b></p>
+  <p style="font-size:22px"><b>Reference:</b> <span id="dRef"></span><br><b>PIN:</b> <span id="dPin"></span></p>
+  <p>Use them on <a href="status.html">Check Status</a> to follow your application.</p>
+  <button class="btn" onclick="print()">Print</button>
+</div>
+<footer class="foot">© <span data-brand="name"></span> · <span data-brand="program"></span> · Session <span data-brand="session"></span></footer>
+<div id="toast"></div>
+<script type="module" src="js/apply.js"></script>
+</body>
+</html>

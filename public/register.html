@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student Registration</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/guard.js"></script>
+</head>
+<body>
+<header class="top">
+  <a href="index.html" class="brand"><img data-logo hidden alt=""><span class="logo" data-brand="short"></span> <span data-brand="name"></span></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="status.html">Check Status</a>
+    <a href="register.html">Student Registration</a>
+    <a href="login.html" class="btn">Login</a>
+  </nav>
+</header>
+
+<form class="card form auth" id="rf">
+  <h2>Student Registration</h2>
+  <p class="muted">For admitted students only. Applying for admission? <a href="apply.html">Start here</a>.</p>
+  <input name="fullName" placeholder="Full name" required minlength="3">
+  <input name="matric" placeholder="Matric Number (e.g. ODF-2026-0001)" required>
+  <input name="appRef" placeholder="Application reference number" required>
+  <input name="email" type="email" placeholder="Email" required>
+  <input name="password" type="password" placeholder="Password (min 6)" required minlength="6">
+  <p class="err" id="msg"></p>
+  <button class="btn">Create student account</button>
+</form>
+<footer class="foot">© <span data-brand="name"></span> · <span data-brand="program"></span> · Session <span data-brand="session"></span></footer>
+<div id="toast"></div>
+<script type="module" src="js/register.js"></script>
+</body>
+</html>

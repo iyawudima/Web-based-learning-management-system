@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/guard.js"></script>
+</head>
+<body>
+<div id="app">
+<div class="layout">
+  <aside id="side">
+    <div class="brand"><img data-logo hidden alt=""><span class="logo" data-brand="short"></span><span data-brand="short"></span></div>
+    <!-- Menu: data-roles = who can see the link. Add a page here AND in js/app.js (PAGES). -->
+    <nav>
+      <a href="#/dashboard" data-roles="admin officer lecturer student">Dashboard</a>
+      <a href="#/users" data-roles="admin">Users</a>
+      <a href="#/courses" data-roles="admin lecturer student">Courses</a>
+      <a href="#/enrollments" data-roles="admin">Enrollments</a>
+      <a href="#/admissions" data-roles="admin officer">Admissions</a>
+      <a href="#/results" data-roles="admin student">My Results</a>
+      <a href="#/announcements" data-roles="admin officer lecturer student">Announcements</a>
+      <a href="#/settings" data-roles="admin">Settings</a>
+      <a href="#/profile" data-roles="admin officer lecturer student">Profile</a>
+    </nav>
+    <button id="out" class="btn alt">Logout</button>
+  </aside>
+  <section class="content">
+    <div class="bar"><button id="menu" class="btn alt">☰</button><b id="uName"></b><span class="tag" id="uRole"></span><span class="muted">Session <span data-brand="session"></span></span></div>
+    <main id="main"><div class="spin">Loading…</div></main>
+  </section>
+</div>
+</div>
+<div id="toast"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
