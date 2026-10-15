@@ -106,9 +106,45 @@ async function route(){const[,p="",a]=location.hash.slice(1).split("/");
  const allowed=[...document.querySelectorAll("#side nav a")].filter(l=>l.dataset.roles.split(" ").includes(me.role)).map(l=>l.getAttribute("href").slice(2));const page=p==="course"?"course":allowed.includes(p)?p:"dashboard";
  shell(page);try{page==="course"?await course(a):await PAGES[page]()}catch(e){main.innerHTML=`<div class="card"><b>Error</b><p>${esc(errMsg(e))}</p></div>`}}
 window.addEventListener("hashchange",route);
-onAuthStateChanged(auth,async u=>{await pending;if(!u||u.isAnonymous){location.href="login.html";return}
- if(!u){me=null;return route()}
- const s=await getDoc(doc(db,"users",u.uid));
- if(!s.exists()){toast("Account profile not found. Contact the administrator.",1);return signOut(auth)}
- me={uid:u.uid,...s.data()};if(!location.hash||["#/login","#/register","#/"].includes(location.hash))location.hash="#/dashboard";route()});
-getDoc(doc(db,"settings","site")).then(s=>{if(s.exists())brand={...brand,...s.data()};paint()}).catch(()=>{});
+const fail = (msg, u) => {
+  document.getElementById("app").innerHTML =
+    '<div style="padding:30px;font-family:sans-serif;max-width:680px;margin:auto">' +
+    "<h3>Cannot open your account</h3>" +
+    "<p>" + msg + "</p>" +
+    "<p><b>Your UID:</b> <code>" + u.uid + "</code></p>" +
+    '<button class="btn" id="lo">Logout</button></div>';
+  document.getElementById("lo").onclick = () => signOut(auth);
+};
+
+onAuthStateChanged(auth, async (u) => {
+  await pending;
+
+  if (!u || u.isAnonymous) {
+    location.href = "login.html";
+    return;
+  }
+
+  let s;
+  try {
+    s = await getDoc(doc(db, "users", u.uid));
+  } catch (e) {
+    return fail("Cannot read your profile (" + e.code + "). Make sure Firestore is created and firestore.rules is published.", u);
+  }
+
+  if (!s.exists()) {
+    return fail("No profile found. Create collection <b>users</b> with document ID exactly equal to your UID below.", u);
+  }
+
+  const role = s.data().role;
+  if (!["admin", "officer", "lecturer", "student"].includes(role)) {
+    return fail("Field <b>role</b> must be exactly one of: admin, officer, lecturer, student (found: " + esc(String(role)) + ").", u);
+  }
+
+  me = { uid: u.uid, ...s.data() };
+
+  if (!location.hash || ["#/login", "#/register", "#/"].includes(location.hash)) {
+    location.hash = "#/dashboard";
+  }
+  route();
+});
+ 
